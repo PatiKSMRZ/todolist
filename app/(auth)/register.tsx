@@ -1,11 +1,35 @@
 import React, { useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 
 export default function RegisterScreen() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  //funkacja - dodaj użytkownika
+
+  const handleSubmit = async () => {
+
+    if(!name || !email || !password) {
+      Alert.alert('Błąd', 'wsystkie pola są wymagane');
+      return;
+    }
+
+
+     //walidacja maila
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)) {
+      Alert.alert('Błąd', 'Nieprawidłowy adres email')
+      return;
+    }
+
+    
+
+  }
+
+ 
+
 
   return (
     <View className="flex-1 justify-center px-6 bg-[#c3979f]">
@@ -29,6 +53,10 @@ export default function RegisterScreen() {
           className="bg-white p-2 mb-2"
           secureTextEntry
         />
+
+             <Pressable onPress={handleSubmit} className=" p-3 rounded-lg items-center bg-[#fff8f9] ">
+                  <Text className="font-bold text-[#8d091f]">Zarejestruj się</Text>
+              </Pressable>
     </View>
   );
 }
