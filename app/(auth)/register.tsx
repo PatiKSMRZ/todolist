@@ -24,9 +24,27 @@ export default function RegisterScreen() {
       return;
     }
 
-    
+    try {
+      const reponse = await fetch('http://192.168.8.109:4000/User', {
+        method: 'POST',
+        headers: {'Content-type': 'application/json'},
+        body: JSON.stringify({name, email, password})
+      });
 
-  }
+      const data = await reponse.json();
+      if (reponse.ok) {
+        Alert.alert('Sukces', `Dodane użytkownika: ${name}`);
+        setName('');
+        setEmail('');
+        setPassword('');
+      } else {
+        Alert.alert('Błąd', data.error || 'Coś poszło nie tak');
+      }
+    } catch (error) {
+      Alert.alert('Błąd', 'brak połączenia z serwerem');
+      console.log(error);
+    }
+  };
 
  
 

@@ -1,12 +1,32 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Alert, Button, Text, TextInput, View } from 'react-native';
 
 export default function LoginScreen()  {
 
   const router= useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      const reponse = await fetch('http://192.168.8.109:4000/login', {
+        method: 'POST',
+        headers: {'Content-type': 'application/json'},
+        body: JSON.stringify({email, password}),
+      });
+      const data = await reponse.json();
+
+      if (reponse.ok) {
+        Alert.alert('Sukces', 'Zalogowano pomyślnie');
+      } else {
+        Alert.alert('Błąd logowanie', data.error);
+      }
+    } catch(error) {
+      Alert.alert('Błąd połączenia', 'Nie udało się połączyć z serwerem.');
+      console.log(error);
+    }
+  }
 
 
   return (
@@ -26,6 +46,8 @@ export default function LoginScreen()  {
         secureTextEntry
         className="bg-white p-2 mb-4"
       />
+      
+      <Button title="Zaloguj się" onPress={handleLogin} />
 
     </View>
   )
