@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Button, Text, TextInput, View } from 'react-native';
@@ -10,15 +11,25 @@ export default function LoginScreen()  {
 
   const handleLogin = async () => {
     try {
-      const reponse = await fetch('http://192.168.8.109:4000/login', {
+      const response = await fetch('http://192.168.8.109:4000/login', {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({email, password}),
       });
-      const data = await reponse.json();
+      const data = await response.json();
+      console.log('Odp backendu', data)
 
-      if (reponse.ok) {
+      if (response.ok && data.token) {
+        //zapisz token
+        await AsyncStorage.setItem('token', data.token)
+
+        // zapisz dane użytkownika (id, email itd)
+        await AsyncStorage.setItem('user', JSON.stringify(data.user));
         Alert.alert('Sukces', 'Zalogowano pomyślnie');
+              console.log(data.token); // tutaj masz JWT
+
+        //przejdź na ekran profilu
+        router.replace('/profile');
       } else {
         Alert.alert('Błąd logowanie', data.error);
       }

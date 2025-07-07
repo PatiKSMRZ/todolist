@@ -25,14 +25,14 @@ export default function RegisterScreen() {
     }
 
     try {
-      const reponse = await fetch('http://192.168.8.109:4000/User', {
+      const response = await fetch('http://192.168.8.109:4000/User', {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({name, email, password})
       });
 
-      const data = await reponse.json();
-      if (reponse.ok) {
+      const data = await response.json();
+      if (response.ok) {
         Alert.alert('Sukces', `Dodane użytkownika: ${name}`);
         setName('');
         setEmail('');
