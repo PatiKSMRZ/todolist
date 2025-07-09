@@ -11,7 +11,7 @@ export default function LoginScreen()  {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.8.109:4000/login', {
+      const response = await fetch('http://192.168.8.104:4000/login', {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({email, password}),
@@ -28,8 +28,8 @@ export default function LoginScreen()  {
         Alert.alert('Sukces', 'Zalogowano pomyślnie');
               console.log(data.token); // tutaj masz JWT
 
-        //przejdź na ekran profilu
-        router.replace('/profile');
+        //przejdź na głowny ekran z listą zadań
+        router.replace('/');
       } else {
         Alert.alert('Błąd logowanie', data.error);
       }
