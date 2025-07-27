@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 const { use } = require('react');
+const authMiddleware = require('./middleware/authMiddleware');
 
 
 const app = express();
@@ -81,6 +82,95 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Wewnętrzny błąd serwera' });
   }
 });
+
+// Endpoint chroniony - pobieranie zadań użytkownika
+app.get('/todos', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const todos = await prisma.todo.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(todos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Błąd podczas pobierania zadań' });
+  }
+});
+
+
+app.post('/todos', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id; // ID użytkownika z tokena
+    const { title } = req.body; // tytuł zadania przesłany z frontu
+
+    if (!title || title.trim() === '') {
+      return res.status(400).json({ error: 'Tytuł zadania jest wymagany' });
+    }
+
+    const newTodo = await prisma.todo.create({
+      data: {
+        title,
+        userId,
+      },
+    });
+
+    res.status(201).json(newTodo); // zwracamy nowo utworzone zadanie
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Błąd podczas tworzenia zadania' });
+  }
+});
+
+app.patch('/todos/:id', authMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  const todoId = parseInt(req.params.id);
+  const { title, completed } = req.body;
+
+  try {
+    // Sprawdź czy zadanie należy do użytkownika
+    const existingTodo = await prisma.todo.findUnique({ where: { id: todoId } });
+    if (!existingTodo || existingTodo.userId !== userId) {
+      return res.status(404).json({ error: 'Zadanie nie znalezione' });
+    }
+
+    const updatedTodo = await prisma.todo.update({
+      where: { id: todoId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(completed !== undefined && { completed }),
+      },
+    });
+
+    res.json(updatedTodo);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Błąd podczas aktualizacji zadania' });
+  }
+});
+
+// DELETE /todos/:id - usuwanie zadania
+app.delete('/todos/:id', authMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  const todoId = parseInt(req.params.id);
+
+  try {
+    const existingTodo = await prisma.todo.findUnique({ where: { id: todoId } });
+    if (!existingTodo || existingTodo.userId !== userId) {
+      return res.status(404).json({ error: 'Zadanie nie znalezione' });
+    }
+
+    await prisma.todo.delete({ where: { id: todoId } });
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Błąd podczas usuwania zadania' });
+  }
+});
+
+
 
 // Start serwera
 app.listen(4000, () => {
