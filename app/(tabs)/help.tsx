@@ -257,9 +257,11 @@ export default function Help ()  {
       <Avatar src={require('../../assets/images/panda.jpg')} />
       <Notification isError={true} message='eror' message2='errere' />
       <UserBadge role="user"/> */
-    import React from 'react'
-import { Text, View } from 'react-native'
+   
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
+import { Button, FlatList, ScrollView, Text, TextInput, View } from 'react-native';
 { /* <BlinkingText text="Uwaga"/> 
     </ScrollView>
   )
@@ -280,12 +282,57 @@ const styles = StyleSheet.create({
 });
 */}
 
-const help = () => {
+const Help = () => {
+const [product, setProduct] = useState('')
+const [productList, setProductList] = useState<string[]>([]);
+
+const saveTasks = async (tasks: string[]) => {
+  try {
+    await AsyncStorage.setItem('products', JSON.stringify(tasks));
+    console.log('lista została zapisana w asyncstorage');
+  } catch(error) {
+    console.log('Błąd przy zapisie: ', error);
+  }
+};
+
+const addProduct = () => {
+  if (product.trim()==="") return;
+
+  const updatedList = [...productList, product]
+  setProductList(updatedList)
+  saveTasks(updatedList)
+  setProduct('')
+  console.log('Dodano', product)
+}
+//sprawdzanie za pomocą konsoli co jest w asyncstorage
+const checkStorage = async () => {
+  const data = await AsyncStorage.getItem('products');
+  console.log('Zawartość w AsyncStorage:', data);
+};
+
   return (
-    <View>
+    <ScrollView>
       <Text>help</Text>
-    </View>
+  <View className="flex-row flex-wrap items-center space-x-1">
+    <TextInput   className="flex-1 border border-gray-300 p-2 rounded bg-white"
+      value={product}
+      onChangeText={setProduct} //zmienia stan produktu
+      placeholder='Wpisz produkt'
+    />
+  <Button  title='add' onPress={addProduct}/>
+  <Button title="Check storage" onPress={checkStorage} />
+  <FlatList 
+  data={productList}
+  keyExtractor={(item, index) => index.toString()}
+  renderItem={({item}) => (
+    <Text className="text-gray-500 italic">{item}</Text>
+  )}
+
+  />
+  </View>
+
+    </ScrollView>
   )
 }
 
-export default help
+export default Help

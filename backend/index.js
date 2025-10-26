@@ -5,9 +5,15 @@ const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 const { use } = require('react');
 const authMiddleware = require('./middleware/authMiddleware');
-
+const https = require ('https')
+const fs = require('fs')
 
 const app = express();
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  } next()
+})
 const prisma = new PrismaClient();
 
 app.use(cors());
@@ -173,6 +179,6 @@ app.delete('/todos/:id', authMiddleware, async (req, res) => {
 
 
 // Start serwera
-app.listen(4000, () => {
-  console.log('✅ Backend działa na http://localhost:4000');
+app.listen(4000, '0.0.0.0', () => {
+  console.log('✅ Backend działa na http://0.0.0.0:4000 (dostępny z innych urządzeń przez IP komputera)');
 });

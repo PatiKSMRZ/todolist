@@ -25,7 +25,7 @@ export default function RegisterScreen() {
     }
 
     try {
-      const response = await fetch('http://192.168.8.104:4000/User', {
+      const response = await fetch('https://wishapp.pl/User', {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({name, email, password})

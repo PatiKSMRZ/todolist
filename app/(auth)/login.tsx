@@ -11,7 +11,7 @@ export default function LoginScreen()  {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.8.104:4000/login', {
+      const response = await fetch('https://wishapp.pl/login', {
         method: 'POST',
         headers: {'Content-type': 'application/json'},
         body: JSON.stringify({email, password}),

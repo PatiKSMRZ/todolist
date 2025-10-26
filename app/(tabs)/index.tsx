@@ -25,11 +25,16 @@ const navigation = useNavigation<NavigationProp>();
     const fetchTasks = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
+        console.log('Token w fetchTasks:', token);  // <-- dodaj tę linię
+if(!token) {
+  console.warn('Brak tokena!'); return;
+}
+
         if(!token) {
           console.warn('Brak tokena!'); return;
         }
 
-        const response = await fetch('http://192.168.8.104:4000/todos', {
+        const response = await fetch('https://wishapp.pl/todos', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -79,7 +84,7 @@ const navigation = useNavigation<NavigationProp>();
         console.warn('Brak tokena!')
         return;
       }
-      const response = await fetch('http://192.168.8.104:4000/todos', {
+      const response = await fetch('https://wishapp.pl/todos', {
         method: 'POST',
         headers: {
           'Content-type': 'application/json',
@@ -124,7 +129,7 @@ const toggleTaskCompletion = async (id: string) => {
 
     const updatedCompleted = !taskToToggle.completed;
 
-    const response = await fetch(`http://192.168.8.104:4000/todos/${id}`, {
+    const response = await fetch(`https://wishapp.pl/todos/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -168,7 +173,7 @@ const deleteTask = async (id: string) => {
       return;
     }
 
-    const response = await fetch(`http://192.168.8.104:4000/todos/${id}`, {
+    const response = await fetch(`https://wishapp.pl/todos/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -219,7 +224,7 @@ const saveEditedTask = async () => {
       return;
     }
 
-    const response = await fetch(`http://192.168.8.104:4000/todos/${editingTaskId}`, {
+    const response = await fetch(`https://wishapp.pl/todos/${editingTaskId}`, {
       method: 'PATCH',
       headers: {
         'Content-type': 'application/json',
