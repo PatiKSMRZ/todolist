@@ -1,7 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, Button, Text, TextInput, View } from 'react-native';
+import { auth } from '../../src/firebaseConfig';
 
 export default function LoginScreen()  {
 
@@ -10,33 +11,28 @@ export default function LoginScreen()  {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    try {
-      const response = await fetch('https://wishapp.pl/login', {
-        method: 'POST',
-        headers: {'Content-type': 'application/json'},
-        body: JSON.stringify({email, password}),
-      });
-      const data = await response.json();
-      console.log('Odp backendu', data)
 
-      if (response.ok && data.token) {
-        //zapisz token
-        await AsyncStorage.setItem('token', data.token)
-
-        // zapisz dane użytkownika (id, email itd)
-        await AsyncStorage.setItem('user', JSON.stringify(data.user));
-        Alert.alert('Sukces', 'Zalogowano pomyślnie');
-              console.log(data.token); // tutaj masz JWT
-
-        //przejdź na głowny ekran z listą zadań
-        router.replace('/');
-      } else {
-        Alert.alert('Błąd logowanie', data.error);
-      }
-    } catch(error) {
-      Alert.alert('Błąd połączenia', 'Nie udało się połączyć z serwerem.');
-      console.log(error);
+    if(!email || !password) {
+      Alert.alert('Błąd', 'Wszystkie pola są wymagane');
+      return
     }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password) ;
+      const user = userCredential.user;
+
+      
+    Alert.alert('Sukces', `Zalogowano jako: ${user.email}`);
+    router.replace('/');
+    } catch (error: any) {
+       let message = 'Coś poszło nie tak';
+    if (error.code === 'auth/user-not-found') message = 'Nie ma takiego użytkownika';
+    if (error.code === 'auth/wrong-password') message = 'Niepoprawne hasło';
+    Alert.alert('Błąd logowania', message);
+    console.log(error);
+
+    }
+ 
   }
 
 
