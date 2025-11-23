@@ -132,81 +132,95 @@ export default function HomeScreen() {
 
   // 🖼️ UI
   return (
-    <View className="flex-1 bg-red-500 justify-center items-center px-4 pt-40">
-      <View className="items-center mb-6">
-        <Text className="text-xl font-bold text-white mb-2">
-          co zamierzasz dzisiaj zrealizować? 👋
-        </Text>
-        <Text className="text-white">Jesteś zalogowany!</Text>
-      </View>
+<View className="flex-1 justify-center items-center px-4 pt-40" style={{ backgroundColor: '#f5f0e6' }}>
+  <View className="items-center mb-6">
+    <Text className="text-xl font-bold mb-2" style={{ color: '#4b3f2f', textAlign: 'center' }}>
+      co zamierzasz dzisiaj zrealizować? 👋
+    </Text>
+    <Text style={{ color: '#4b3f2f' }}>Jesteś zalogowany!</Text>
+  </View>
 
-      <View>
-        <TextInput
-          className="bg-white w-72 rounded-lg px-4 py-2 mb-4 text-black"
-          placeholder="Wpisz zadanie..."
-          placeholderTextColor="#999"
-          value={taskText}
-          onChangeText={setTaskText}
-          onSubmitEditing={addTask}
-        />
-        <Pressable
-          onPress={addTask}
-          className="bg-white rounded-lg px-6 py-3 shadow-md"
-          android_ripple={{ color: '#93c5fd' }}
+  <View>
+    <TextInput
+      className="w-72 rounded-lg px-4 py-2 mb-4"
+      placeholder="Wpisz zadanie..."
+      placeholderTextColor="#a89f8c"
+      value={taskText}
+      onChangeText={setTaskText}
+      onSubmitEditing={addTask}
+      style={{ backgroundColor: '#e6dfd0', color: '#4b3f2f' }}
+    />
+
+    <Pressable
+      onPress={addTask}
+      className="rounded-lg px-6 py-3 mb-4"
+      style={{
+        backgroundColor: '#bfa786',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+      }}
+      android_ripple={{ color: '#d6c4a1' }}
+    >
+      <Text className="font-semibold text-center" style={{ color: '#fff' }}>Dodaj zadanie</Text>
+    </Pressable>
+
+    <FlatList
+      className="mt-5"
+      data={tasks}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <View
+          className="flex-row items-center justify-between mb-3 px-2 py-1 rounded"
+          style={{
+            backgroundColor: item.id === editingTaskId ? '#dfd3c0' : '#f5f0e6',
+          }}
         >
-          <Text className="text-red-500 font-semibold text-center">Dodaj zadanie</Text>
-        </Pressable>
-
-        <FlatList
-          className="mt-5"
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View
-              className={`flex-row items-center justify-between mb-3 ${
-                item.id === editingTaskId ? 'bg-yellow-100 rounded px-2 py-1' : ''
-              }`}
-            >
-              {item.id === editingTaskId ? (
-                <View className="flex-row items-center gap-2">
-                  <TextInput
-                    value={editingTaskText}
-                    onChangeText={setEditingTaskText}
-                    onSubmitEditing={saveEditedTask}
-                    className="bg-white px-2 py-1 rounded text-black w-48"
-                    autoFocus
-                  />
-                  <Pressable onPress={saveEditedTask}>
-                    <Text className="text-green-300 font-bold">✅</Text>
-                  </Pressable>
-                  <Pressable onPress={cancelEditing}>
-                    <Text className="text-red-300 font-bold">❌</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <Pressable onPress={() => toggleTaskCompletion(item.id)}>
-                  <Text
-                    className={`text-lg ${
-                      item.completed ? 'line-through text-gray-400' : 'text-white'
-                    }`}
-                  >
-                    {item.text}
-                  </Text>
-                </Pressable>
-              )}
-              <View className="flex-row gap-2 ml-4">
-                <Pressable onPress={() => editTask(item.id, item.text)}>
-                  <Text className="text-yellow-300">✏️</Text>
-                </Pressable>
-                <Pressable onPress={() => deleteTask(item.id)}>
-                  <Text className="text-yellow-300">🗑️</Text>
-                </Pressable>
-              </View>
+          {item.id === editingTaskId ? (
+            <View className="flex-row items-center gap-2">
+              <TextInput
+                value={editingTaskText}
+                onChangeText={setEditingTaskText}
+                onSubmitEditing={saveEditedTask}
+                className="px-2 py-1 rounded w-48"
+                style={{ backgroundColor: '#e6dfd0', color: '#4b3f2f' }}
+                autoFocus
+              />
+              <Pressable onPress={saveEditedTask}>
+                <Text style={{ color: 'green', fontWeight: 'bold' }}>✅</Text>
+              </Pressable>
+              <Pressable onPress={cancelEditing}>
+                <Text style={{ color: 'red', fontWeight: 'bold' }}>❌</Text>
+              </Pressable>
             </View>
+          ) : (
+            <Pressable onPress={() => toggleTaskCompletion(item.id)}>
+              <Text
+                className="text-lg"
+                style={{
+                  textDecorationLine: item.completed ? 'line-through' : 'none',
+                  color: item.completed ? '#a89f8c' : '#4b3f2f',
+                }}
+              >
+                {item.text}
+              </Text>
+            </Pressable>
           )}
-          ListEmptyComponent={<Text className="text-white mt-4">Brak zadań</Text>}
-        />
-      </View>
-    </View>
+          <View className="flex-row gap-2 ml-4">
+            <Pressable onPress={() => editTask(item.id, item.text)}>
+              <Text style={{ color: '#c19f6e' }}>✏️</Text>
+            </Pressable>
+            <Pressable onPress={() => deleteTask(item.id)}>
+              <Text style={{ color: '#c19f6e' }}>🗑️</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+      ListEmptyComponent={<Text style={{ color: '#4b3f2f', marginTop: 16, textAlign: 'center' }}>Brak zadań</Text>}
+    />
+  </View>
+</View>
   );
 }
