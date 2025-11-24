@@ -21,7 +21,7 @@ export default function ProfileScreen() {
     });
 
     return () => unsubscribe(); // cleanup przy unmount
-  }, []);
+  }, [router]);
 
   // Wylogowanie
   const handleLogOut = async () => {
