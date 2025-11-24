@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -9,17 +9,33 @@ export default function RootLayout() {
   const [authReady, setAuthReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    console.log("✅ Firebase Auth startuje...");
+  const router = useRouter();
+  const segments = useSegments();
 
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("👤 Użytkownik:", user ? user.email : "brak zalogowanego");
+      console.log("👤 Użytkownik:", user ? user.email : "brak");
       setIsLoggedIn(!!user);
       setAuthReady(true);
     });
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
+
+  // ⏳ Póki auth się ładuje, nie przeładowuj routingu
+  useEffect(() => {
+    if (!authReady) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isLoggedIn && !inAuthGroup) {
+      router.replace("/welcome");
+    }
+
+    if (isLoggedIn && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+  }, [authReady, isLoggedIn, router, segments]);
 
   if (!authReady) {
     return (
@@ -30,12 +46,5 @@ export default function RootLayout() {
     );
   }
 
-  return (
-    <Stack>
-      <Stack.Screen
-        name={isLoggedIn ? "(tabs)" : "welcome"}
-        options={{ headerShown: false }}
-      />
-    </Stack>
-  );
+  return <Slot />;
 }

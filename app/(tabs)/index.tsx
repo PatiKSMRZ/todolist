@@ -47,7 +47,7 @@ export default function HomeScreen() {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [navigation]);
 
   // 📥 Pobieranie zadań w czasie rzeczywistym
   useEffect(() => {
@@ -195,19 +195,32 @@ export default function HomeScreen() {
                 <Text style={{ color: 'red', fontWeight: 'bold' }}>❌</Text>
               </Pressable>
             </View>
-          ) : (
-            <Pressable onPress={() => toggleTaskCompletion(item.id)}>
-              <Text
-                className="text-lg"
-                style={{
-                  textDecorationLine: item.completed ? 'line-through' : 'none',
-                  color: item.completed ? '#a89f8c' : '#4b3f2f',
-                }}
-              >
-                {item.text}
-              </Text>
-            </Pressable>
-          )}
+          ) : <View className="flex-row items-center">
+        <Pressable
+          onPress={() => toggleTaskCompletion(item.id)}
+          className="w-6 h-6 rounded-full border mr-3 flex items-center justify-center"
+          style={{
+          borderColor: item.completed ? '#bfa786' : '#4b3f2f',
+         backgroundColor: item.completed ? '#bfa786' : 'transparent',
+        }}
+      >
+        {item.completed && (
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>✓</Text>
+        )}
+        </Pressable>
+
+      <Pressable onPress={() => toggleTaskCompletion(item.id)}>
+        <Text
+      className="text-lg"
+      style={{
+        textDecorationLine: item.completed ? 'line-through' : 'none',
+        color: item.completed ? '#a89f8c' : '#4b3f2f',
+      }}
+    >
+      {item.text}
+    </Text>
+  </Pressable>
+</View>}
           <View className="flex-row gap-2 ml-4">
             <Pressable onPress={() => editTask(item.id, item.text)}>
               <Text style={{ color: '#c19f6e' }}>✏️</Text>
