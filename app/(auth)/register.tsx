@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { auth } from '../../src/firebaseConfig';
@@ -18,10 +17,11 @@ export default function RegisterScreen() {
 
     try {
       // 🔹 Tworzenie użytkownika w Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await auth().createUserWithEmailAndPassword(email, password);
+
 
       // 🔹 Aktualizacja profilu (dodanie imienia)
-      await updateProfile(userCredential.user, { displayName: name });
+      await auth().currentUser?.updateProfile({ displayName: name });
 
       Alert.alert("Sukces", `Witaj, ${name}! Twoje konto zostało utworzone 🎉`);
 

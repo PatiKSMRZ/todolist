@@ -1,6 +1,5 @@
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { auth } from '../../src/firebaseConfig';
@@ -19,11 +18,10 @@ export default function LoginScreen()  {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password) ;
-      const user = userCredential.user;
+       const user = await auth().signInWithEmailAndPassword(email, password);
 
       
-    Alert.alert('Sukces', `Zalogowano jako: ${user.email}`);
+    Alert.alert('Sukces', `Zalogowano jako: ${user.user.email}`);
     router.replace('/');
     } catch (error: any) {
        console.log("FIREBASE ERROR:", error.code, error.message);

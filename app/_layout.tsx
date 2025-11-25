@@ -1,8 +1,7 @@
+import auth from '@react-native-firebase/auth';
 import { Slot, useRouter, useSegments } from "expo-router";
-import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
-import { auth } from "../src/firebaseConfig";
 import './globals.css';
 
 export default function RootLayout() {
@@ -13,7 +12,7 @@ export default function RootLayout() {
   const segments = useSegments();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = auth().onAuthStateChanged(user => {
       console.log("👤 Użytkownik:", user ? user.email : "brak");
       setIsLoggedIn(!!user);
       setAuthReady(true);

@@ -1,8 +1,7 @@
+import auth from '@react-native-firebase/auth';
 import { useRouter } from 'expo-router';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { auth } from '../../src/firebaseConfig';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -11,14 +10,14 @@ export default function ProfileScreen() {
 
   // Nasłuchiwanie stanu użytkownika
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setEmail(user.email || '');
-      } else {
-        router.replace('/login');
-      }
-      setLoading(false);
-    });
+    const unsubscribe = auth().onAuthStateChanged(user => {
+  if (user) {
+    setEmail(user.email || '');
+  } else {
+    router.replace('/login');
+  }
+  setLoading(false);
+});
 
     return () => unsubscribe(); // cleanup przy unmount
   }, [router]);
@@ -26,7 +25,7 @@ export default function ProfileScreen() {
   // Wylogowanie
   const handleLogOut = async () => {
     try {
-      await signOut(auth);
+      await auth().signOut();
       router.replace('/welcome');
     } catch (error) {
       console.log('Błąd przy wylogowaniu:', error);

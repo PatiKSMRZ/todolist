@@ -1,31 +1,19 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { onAuthStateChanged } from "firebase/auth";
 
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  updateDoc,
-} from "firebase/firestore";
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, Text, TextInput, View, } from 'react-native';
-import { auth, db } from "../../src/firebaseConfig";
 import { RootStackParamList } from '../../types/navigation';
-
 
 
 
 interface Task {
   id: string;
-  text: string;
+  title: string; // zmiana z text na title
   completed: boolean;
 }
-
 export default function HomeScreen() {
   type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'HomeScreen'>;
   const navigation = useNavigation<NavigationProp>();
@@ -38,61 +26,77 @@ export default function HomeScreen() {
 
   // 👤 Obserwuj zalogowanego użytkownika
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = auth().onAuthStateChanged(user => {
       if (user) {
-        setUserId(user.uid);
-      } else {
-        setUserId(null);
-        navigation.navigate('LoginScreen');
-      }
-    });
+    setUserId(user.uid);
+  } else {
+    setUserId(null);
+    navigation.navigate('LoginScreen');
+  }
+});
     return () => unsubscribe();
   }, [navigation]);
 
   // 📥 Pobieranie zadań w czasie rzeczywistym
   useEffect(() => {
-    if (!userId) return;
-    const q = query(collection(db, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const userTasks = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        text: doc.data().title,
-        completed: doc.data().completed,
-      }));
-      setTasks(userTasks);
-    });
-    return () => unsubscribe();
-  }, [userId]);
+  if (!userId) return;
+
+  const tasksRef = firestore()
+    .collection('users')
+    .doc(userId)
+    .collection('tasks')
+    .orderBy('createdAt', 'desc');
+
+  const unsubscribe = tasksRef.onSnapshot(snapshot => {
+    const userTasks = snapshot.docs.map(doc => ({
+      id: doc.id,
+      title: doc.data().title,
+      completed: doc.data().completed,
+    }));
+    setTasks(userTasks);
+  });
+
+  return () => unsubscribe();
+}, [userId]);
 
   // ➕ Dodawanie zadania
   const addTask = async () => {
-    if (!taskText.trim() || !userId) return;
-    try {
-      await addDoc(collection(db, 'users', userId, 'tasks'), {
+  if (!taskText.trim() || !userId) return;
+  try {
+    await firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('tasks')
+      .add({
         title: taskText.trim(),
         completed: false,
-        createdAt: new Date(),
+        createdAt: firestore.FieldValue.serverTimestamp(),
       });
-      setTaskText('');
-    } catch (e) {
-      console.error('Błąd podczas dodawania zadania:', e);
-      Alert.alert('Błąd', 'Nie udało się dodać zadania');
-    }
-  };
-
+    setTaskText('');
+  } catch (e) {
+    console.error('Błąd podczas dodawania zadania:', e);
+    Alert.alert('Błąd', 'Nie udało się dodać zadania');
+  }
+};
   // ✅ Odhaczanie zadania
   const toggleTaskCompletion = async (id: string) => {
-    if (!userId) return;
-    try {
-      const task = tasks.find((t) => t.id === id);
-      if (!task) return;
-      await updateDoc(doc(db, 'users', userId, 'tasks', id), {
+  if (!userId) return;
+  try {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    await firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('tasks')
+      .doc(id)
+      .update({
         completed: !task.completed,
       });
-    } catch (e) {
-      console.error('Błąd przy zmianie statusu:', e);
-    }
-  };
+  } catch (e) {
+    console.error('Błąd przy zmianie statusu:', e);
+  }
+};
+
 
   // ✏️ Edycja
   const editTask = (id: string, currentText: string) => {
@@ -101,18 +105,23 @@ export default function HomeScreen() {
   };
 
   const saveEditedTask = async () => {
-    if (!editingTaskId || !editingTaskText.trim() || !userId) return;
-    try {
-      await updateDoc(doc(db, 'users', userId, 'tasks', editingTaskId), {
+  if (!editingTaskId || !editingTaskText.trim() || !userId) return;
+  try {
+    await firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('tasks')
+      .doc(editingTaskId)
+      .update({
         title: editingTaskText.trim(),
       });
-      setEditingTaskId(null);
-      setEditingTaskText('');
-    } catch (e) {
-      console.error('Błąd podczas edycji:', e);
-      Alert.alert('Błąd', 'Nie udało się zaktualizować zadania');
-    }
-  };
+    setEditingTaskId(null);
+    setEditingTaskText('');
+  } catch (e) {
+    console.error('Błąd podczas edycji:', e);
+    Alert.alert('Błąd', 'Nie udało się zaktualizować zadania');
+  }
+};
 
   const cancelEditing = () => {
     setEditingTaskId(null);
@@ -120,15 +129,20 @@ export default function HomeScreen() {
   };
 
   // 🗑️ Usuwanie zadania
-  const deleteTask = async (id: string) => {
-    if (!userId) return;
-    try {
-      await deleteDoc(doc(db, 'users', userId, 'tasks', id));
-    } catch (e) {
-      console.error('Błąd podczas usuwania:', e);
-      Alert.alert('Błąd', 'Nie udało się usunąć zadania');
-    }
-  };
+ const deleteTask = async (id: string) => {
+  if (!userId) return;
+  try {
+    await firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('tasks')
+      .doc(id)
+      .delete();
+  } catch (e) {
+    console.error('Błąd podczas usuwania:', e);
+    Alert.alert('Błąd', 'Nie udało się usunąć zadania');
+  }
+};
 
   // 🖼️ UI
   return (
@@ -217,12 +231,12 @@ export default function HomeScreen() {
         color: item.completed ? '#a89f8c' : '#4b3f2f',
       }}
     >
-      {item.text}
+      {item.title}
     </Text>
   </Pressable>
 </View>}
           <View className="flex-row gap-2 ml-4">
-            <Pressable onPress={() => editTask(item.id, item.text)}>
+            <Pressable onPress={() => editTask(item.id, item.title)}>
               <Text style={{ color: '#c19f6e' }}>✏️</Text>
             </Pressable>
             <Pressable onPress={() => deleteTask(item.id)}>
